@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VerdantHunt.Player.MovementConfig
   walkSpeed: 1.5
   sprintSpeed: 4
-  crouchSpeed: 0.5
+  crouchSpeed: 1
   acceleration: 30
   linearDrag: 5
   gravity: -15
