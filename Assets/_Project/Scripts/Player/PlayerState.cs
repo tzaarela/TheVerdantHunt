@@ -6,7 +6,6 @@ namespace VerdantHunt.Player
     public struct PlayerState : IPredictedData<PlayerState>
     {
         public Vector3 position;
-        public float yaw;
         public Vector3 velocity;
         public float stamina;
         public float health;

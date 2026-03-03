@@ -17,4 +17,10 @@ MonoBehaviour:
   crouchSpeed: 1.5
   acceleration: 30
   linearDrag: 5
+  gravity: -15
+  groundedDownForce: -0.5
+  mouseSensitivity: 0.15
+  maxStamina: 100
+  staminaSprintDrain: 15
+  staminaRegenRate: 10
   animationDampTime: 0.1

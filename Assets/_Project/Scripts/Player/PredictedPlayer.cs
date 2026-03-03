@@ -12,7 +12,6 @@ namespace VerdantHunt.Player
 
         [Header("Input Actions")]
         [SerializeField] InputActionReference moveAction;
-        [SerializeField] InputActionReference lookAction;
         [SerializeField] InputActionReference sprintAction;
         [SerializeField] InputActionReference crouchAction;
         [SerializeField] InputActionReference attackAction;
@@ -20,9 +19,9 @@ namespace VerdantHunt.Player
 
         [Header("References")]
         [SerializeField] Animator animator;
+        [SerializeField] Transform cameraTarget;
 
         CharacterController _cc;
-        float _accumulatedYaw;
 
         // Animator parameter hashes
         static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -36,14 +35,26 @@ namespace VerdantHunt.Player
             _cc = GetComponent<CharacterController>();
         }
 
-        void OnEnable()
+		protected override void LateAwake()
+		{
+			base.LateAwake();
+
+            if (isOwner)
+            {
+                var cameraController = PlayerCameraController.Instance;
+                cameraController.SetPredictedPlayer(this);
+			    cameraController.SetCameraTarget(cameraTarget);
+            }
+		}
+
+		void OnEnable()
         {
-            EnableActions(true);
+            if (isOwner) EnableActions(true);
         }
 
         void OnDisable()
         {
-            EnableActions(false);
+            if (isOwner) EnableActions(false);
         }
 
         void EnableActions(bool enable)
@@ -64,7 +75,6 @@ namespace VerdantHunt.Player
         protected override PlayerState GetInitialState() => new PlayerState
         {
             position = transform.position,
-            yaw = transform.eulerAngles.y,
             health = 100f,
             stamina = config.maxStamina,
             arrowCount = 10,
@@ -86,10 +96,6 @@ namespace VerdantHunt.Player
 
         protected override void UpdateInput(ref PlayerInput input)
         {
-            // Accumulate mouse X delta between ticks
-            var lookDelta = lookAction?.action?.ReadValue<Vector2>() ?? Vector2.zero;
-            _accumulatedYaw += lookDelta.x;
-
             // Edge-triggered: |= so we don't miss presses between ticks
             if (attackAction?.action != null && attackAction.action.WasReleasedThisFrame())
                 input.releaseBow |= true;
@@ -107,9 +113,8 @@ namespace VerdantHunt.Player
             input.crouch = crouchAction?.action?.IsPressed() ?? false;
             input.drawBow = attackAction?.action?.IsPressed() ?? false;
 
-            // Transfer accumulated yaw and reset
-            input.lookYaw = _accumulatedYaw;
-            _accumulatedYaw = 0f;
+            // Yaw from camera controller — used for movement direction only, not predicted
+            input.yaw = PlayerCameraController.Instance.Yaw;
         }
 
         // --- Input Validation ---
@@ -117,7 +122,6 @@ namespace VerdantHunt.Player
         protected override void SanitizeInput(ref PlayerInput input)
         {
             input.moveDir = Vector2.ClampMagnitude(input.moveDir, 1f);
-            input.lookYaw = Mathf.Clamp(input.lookYaw, -180f, 180f);
         }
 
         // --- Extrapolation (missing remote input) ---
@@ -134,11 +138,8 @@ namespace VerdantHunt.Player
 
         protected override void Simulate(PlayerInput input, ref PlayerState state, float delta)
         {
-            // Rotation
-            state.yaw += input.lookYaw * config.mouseSensitivity;
-
             // Movement direction relative to facing
-            float yawRad = state.yaw * Mathf.Deg2Rad;
+            float yawRad = input.yaw * Mathf.Deg2Rad;
             var forward = new Vector3(Mathf.Sin(yawRad), 0f, Mathf.Cos(yawRad));
             var right = new Vector3(forward.z, 0f, -forward.x);
             var moveWorld = Vector3.ClampMagnitude(
