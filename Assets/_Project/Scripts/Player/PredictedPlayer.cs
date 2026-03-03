@@ -28,6 +28,8 @@ namespace VerdantHunt.Player
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int IsCrouchingHash = Animator.StringToHash("IsCrouching");
         static readonly int IsSprintingHash = Animator.StringToHash("IsSprinting");
+        static readonly int MoveDirXHash = Animator.StringToHash("MoveDirX");
+        static readonly int MoveDirYHash = Animator.StringToHash("MoveDirY");
 
         protected void Awake()
         {
@@ -155,8 +157,10 @@ namespace VerdantHunt.Player
                 state.velocity.y = config.groundedDownForce;
             state.velocity.y += config.gravity * delta;
 
-            // Store horizontal speed for animations
+            // Store movement info for animations
             state.horizontalSpeed = moveWorld.magnitude * speed;
+            state.moveDirX = input.moveDir.x;
+            state.moveDirY = input.moveDir.y;
 
             // Final movement
             var finalMove = (moveWorld * speed) + (Vector3.up * state.velocity.y);
@@ -183,6 +187,8 @@ namespace VerdantHunt.Player
             {
                 float normalizedSpeed = Mathf.Clamp01(viewState.horizontalSpeed / config.sprintSpeed);
                 animator.SetFloat(SpeedHash, normalizedSpeed, config.animationDampTime, Time.deltaTime);
+                animator.SetFloat(MoveDirXHash, viewState.moveDirX, config.animationDampTime, Time.deltaTime);
+                animator.SetFloat(MoveDirYHash, viewState.moveDirY, config.animationDampTime, Time.deltaTime);
                 animator.SetBool(IsCrouchingHash, viewState.isCrouching);
                 animator.SetBool(IsSprintingHash, viewState.isSprinting);
             }

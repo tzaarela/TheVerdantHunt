@@ -13,6 +13,8 @@ namespace VerdantHunt.Player
         public int arrowCount;
         public float drawStrength;
         public float horizontalSpeed;
+        public float moveDirX;
+        public float moveDirY;
         public bool isCrouching;
         public bool isSprinting;
 
