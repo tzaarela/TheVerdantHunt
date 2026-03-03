@@ -78,7 +78,6 @@ namespace VerdantHunt.Player
         protected override void SetUnityState(PlayerState state)
         {
             transform.position = state.position;
-            transform.rotation = Quaternion.Euler(0f, state.yaw, 0f);
         }
 
         // --- Input (every Unity frame) ---
@@ -177,7 +176,8 @@ namespace VerdantHunt.Player
 
         protected override void UpdateView(PlayerState viewState, PlayerState? verified)
         {
-            transform.rotation = Quaternion.Euler(0f, viewState.yaw, 0f);
+            // Yaw rotation is applied locally by PlayerCameraController (not predicted)
+            // to avoid reconciliation jitter on mouse look.
 
             if (animator != null)
             {

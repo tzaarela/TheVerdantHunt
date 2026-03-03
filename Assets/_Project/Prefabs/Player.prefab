@@ -229,7 +229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 476ee77ae9d3b034baad1ea487fd708e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VerdantHunt.Player.PlayerCameraController
-  pitchSpeed: 0.15
+  config: {fileID: 11400000, guid: 8123ac437219be04190a88dc312d4b4d, type: 2}
   minPitch: -60
   maxPitch: 60
   cameraTarget: {fileID: 7650642308464699411}
