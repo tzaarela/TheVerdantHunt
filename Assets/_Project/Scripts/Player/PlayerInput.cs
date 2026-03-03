@@ -7,7 +7,7 @@ namespace VerdantHunt.Player
     {
         // Continuous (set in GetFinalInput)
         public Vector2 moveDir;
-        public float yaw; // absolute yaw from camera controller (not a delta)
+        public Vector3 cameraForward;
         public bool sprint;
         public bool crouch;
         public bool drawBow;

@@ -19,7 +19,7 @@ MonoBehaviour:
   linearDrag: 5
   gravity: -15
   groundedDownForce: -0.5
-  mouseSensitivity: 0.15
+  mouseSensitivity: 0.075
   maxStamina: 100
   staminaSprintDrain: 15
   staminaRegenRate: 10

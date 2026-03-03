@@ -8,6 +8,7 @@ namespace VerdantHunt.Player
     /// Local-only camera controller for the owning player.
     /// Manages yaw and pitch visually — neither is predicted.
     /// </summary>
+    [DefaultExecutionOrder(-100)]
     public class PlayerCameraController : MonoBehaviour
     {
         [SerializeField] MovementConfig config;
@@ -16,59 +17,49 @@ namespace VerdantHunt.Player
         [SerializeField] InputActionReference lookAction;
         [SerializeField] CinemachineCamera cinemachineCamera;
 
-        Transform cameraTarget;
-        PredictedPlayer _player;
-        float _pitch;
-        float _yaw;
+        Transform _cameraTarget;
+        Vector2 _currentRotation;
         bool _initialized;
-
-        public float Yaw => _yaw;
 
         public static PlayerCameraController Instance;
 
-        void Awake()
+        public Vector3 Forward => Quaternion.Euler(_currentRotation.x, _currentRotation.y, 0f) * Vector3.forward;
+
+		void Awake()
         {
             if (Instance == null)
                 Instance = this;
             else
                 Debug.LogWarning("Multiple PlayerCameraController instances found. This may cause issues with the static Instance reference.");
+
+            cinemachineCamera.Priority.Value = -1;
+        }
+
+        public void Init()
+        {
+
+            cinemachineCamera.Priority.Value = 10;
+            _initialized = true;
         }
 
         void LateUpdate()
         {
-            if (_player == null)
-                return;
+            if (!_initialized) return;
 
-            if (!_initialized)
-            {
-                _yaw = _player.transform.eulerAngles.y;
-                _initialized = true;
-            }
+            Vector2 mouseDelta = lookAction?.action?.ReadValue<Vector2>() ?? Vector2.zero;
 
-            var lookDelta = lookAction?.action?.ReadValue<Vector2>() ?? Vector2.zero;
+            var mouseX = mouseDelta.x * config.mouseSensitivity;
+            var mouseY = mouseDelta.y * config.mouseSensitivity;
+            _currentRotation.x = Mathf.Clamp(_currentRotation.x - mouseY, minPitch, maxPitch);
+            _currentRotation.y += mouseX;
 
-            _yaw += lookDelta.x * config.mouseSensitivity;
-
-            _pitch -= lookDelta.y * config.mouseSensitivity;
-            _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
-
-            // Apply yaw to character transform
-            _player.transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
-
-            // Apply pitch to camera target
-            if (cameraTarget != null)
-                cameraTarget.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
-        }
-
-        public void SetPredictedPlayer(PredictedPlayer player)
-        {
-            _player = player;
+            transform.localRotation = Quaternion.Euler(_currentRotation.x, 0f, 0f);
 		}
-
+        
         public void SetCameraTarget(Transform target)
         {
-            cameraTarget = target;
-            cinemachineCamera.Follow = cameraTarget;
+            _cameraTarget = target;
+            cinemachineCamera.Follow = _cameraTarget;
 		}
     }
 }

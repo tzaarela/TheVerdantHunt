@@ -4,7 +4,6 @@ using UnityEngine.InputSystem;
 
 namespace VerdantHunt.Player
 {
-    [RequireComponent(typeof(CharacterController))]
     public class PredictedPlayer : PredictedIdentity<PlayerInput, PlayerState>
     {
         [Header("Config")]
@@ -20,8 +19,8 @@ namespace VerdantHunt.Player
         [Header("References")]
         [SerializeField] Animator animator;
         [SerializeField] Transform cameraTarget;
-
-        CharacterController _cc;
+        [SerializeField] PlayerCameraController playerCameraController;
+        [SerializeField] PredictedRigidbody predictedRigidbody;
 
         // Animator parameter hashes
         static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -30,10 +29,13 @@ namespace VerdantHunt.Player
         static readonly int MoveDirXHash = Animator.StringToHash("MoveDirX");
         static readonly int MoveDirYHash = Animator.StringToHash("MoveDirY");
 
-        protected void Awake()
-        {
-            _cc = GetComponent<CharacterController>();
-        }
+		private void Awake()
+		{
+            Application.targetFrameRate = 120;
+
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
+		}
 
 		protected override void LateAwake()
 		{
@@ -41,9 +43,7 @@ namespace VerdantHunt.Player
 
             if (isOwner)
             {
-                var cameraController = PlayerCameraController.Instance;
-                cameraController.SetPredictedPlayer(this);
-			    cameraController.SetCameraTarget(cameraTarget);
+                playerCameraController.Init();
             }
 		}
 
@@ -113,8 +113,7 @@ namespace VerdantHunt.Player
             input.crouch = crouchAction?.action?.IsPressed() ?? false;
             input.drawBow = attackAction?.action?.IsPressed() ?? false;
 
-            // Yaw from camera controller — used for movement direction only, not predicted
-            input.yaw = PlayerCameraController.Instance.Yaw;
+            input.cameraForward = playerCameraController.Forward;
         }
 
         // --- Input Validation ---
@@ -139,11 +138,7 @@ namespace VerdantHunt.Player
         protected override void Simulate(PlayerInput input, ref PlayerState state, float delta)
         {
             // Movement direction relative to facing
-            float yawRad = input.yaw * Mathf.Deg2Rad;
-            var forward = new Vector3(Mathf.Sin(yawRad), 0f, Mathf.Cos(yawRad));
-            var right = new Vector3(forward.z, 0f, -forward.x);
-            var moveWorld = Vector3.ClampMagnitude(
-                forward * input.moveDir.y + right * input.moveDir.x, 1f);
+            Vector3 direction = (transform.forward * input.moveDir.y + transform.right * input.moveDir.x); 
 
             // Speed selection
             state.isSprinting = input.sprint && state.stamina > 0f && !input.crouch;
@@ -153,22 +148,23 @@ namespace VerdantHunt.Player
             if (state.isCrouching)
                 speed = config.crouchSpeed;
 
-            // Gravity
-            if (_cc.isGrounded && state.velocity.y < 0f)
-                state.velocity.y = config.groundedDownForce;
-            state.velocity.y += config.gravity * delta;
-
             // Store movement info for animations
-            state.horizontalSpeed = moveWorld.magnitude * speed;
+            state.horizontalSpeed = direction.magnitude * speed;
             state.moveDirX = input.moveDir.x;
             state.moveDirY = input.moveDir.y;
 
             // Final movement
-            var finalMove = (moveWorld * speed) + (Vector3.up * state.velocity.y);
-            _cc.Move(finalMove * delta);
+            predictedRigidbody.AddForce(direction * speed * config.acceleration);
 
-            // Read position back from CharacterController
-            state.position = transform.position;
+            if (input.cameraForward != Vector3.zero)
+            {
+                var camForward = input.cameraForward;
+                camForward.y = 0f;
+                if (camForward.magnitude > 0.0001f)
+                {
+                    predictedRigidbody.MoveRotation(Quaternion.LookRotation(camForward.normalized));
+				}
+			}
 
             // Stamina
             if (state.isSprinting)
