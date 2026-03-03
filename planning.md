@@ -19,6 +19,13 @@ A slow, tactical 3rd-person multiplayer archery game where 2-4 players stalk eac
 
 **Unity Version / Render Pipeline:** 6.3 LTS / URP
 
+**Packages:**
+-PurrNet
+-PurrDiction
+-New Input System
+-Cinemachine
+
+
 ---
 
 ## 2. Design Pillars (Gameplay-Driven)
