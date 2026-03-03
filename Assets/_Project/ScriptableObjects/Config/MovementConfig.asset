@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c6100b948c8de04fb7a6bf57d06cb10, type: 3}
   m_Name: MovementConfig
   m_EditorClassIdentifier: Assembly-CSharp::VerdantHunt.Player.MovementConfig
-  walkSpeed: 2.5
-  sprintSpeed: 5
-  crouchSpeed: 1.5
+  walkSpeed: 1.5
+  sprintSpeed: 4
+  crouchSpeed: 0.5
   acceleration: 30
   linearDrag: 5
   gravity: -15

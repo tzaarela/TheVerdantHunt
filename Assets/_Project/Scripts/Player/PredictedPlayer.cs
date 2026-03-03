@@ -127,10 +127,10 @@ namespace VerdantHunt.Player
 
         protected override void ModifyExtrapolatedInput(ref PlayerInput input)
         {
-            input.moveDir *= 0.4f;
-            input.releaseBow = false;
-            input.melee = false;
-            input.interact = false;
+            //input.moveDir *= 0.4f;
+            //input.releaseBow = false;
+            //input.melee = false;
+            //input.interact = false;
         }
 
         // --- Core Simulation (deterministic, every tick) ---
@@ -177,9 +177,6 @@ namespace VerdantHunt.Player
 
         protected override void UpdateView(PlayerState viewState, PlayerState? verified)
         {
-            // Yaw rotation is applied locally by PlayerCameraController (not predicted)
-            // to avoid reconciliation jitter on mouse look.
-
             if (animator != null)
             {
                 float normalizedSpeed = Mathf.Clamp01(viewState.horizontalSpeed / config.sprintSpeed);

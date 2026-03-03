@@ -21,17 +21,10 @@ namespace VerdantHunt.Player
         Vector2 _currentRotation;
         bool _initialized;
 
-        public static PlayerCameraController Instance;
-
         public Vector3 Forward => Quaternion.Euler(_currentRotation.x, _currentRotation.y, 0f) * Vector3.forward;
 
-		void Awake()
+		private void Awake()
         {
-            if (Instance == null)
-                Instance = this;
-            else
-                Debug.LogWarning("Multiple PlayerCameraController instances found. This may cause issues with the static Instance reference.");
-
             cinemachineCamera.Priority.Value = -1;
         }
 
@@ -42,7 +35,7 @@ namespace VerdantHunt.Player
             _initialized = true;
         }
 
-        void LateUpdate()
+        public void LateUpdate()
         {
             if (!_initialized) return;
 
